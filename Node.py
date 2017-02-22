@@ -50,11 +50,11 @@ class Node(object):
                 next_step = not_discovered_steps[index]
         return next_step
 
-    def simulate(self):
+    def simulate(self, depth, randomly = False):
         # rewards = math.trunc(random.uniform(1, 10))
 
-        #far = min([far, len(self.s)])
-        s = self.s
+        depth = len(self.s) if depth == -1 else min([depth, len(self.s)])
+        s = self.s[:depth]
         current_board = self.cloneGrid()
         rewards = 0
         current_x = self.current_x
@@ -74,14 +74,17 @@ class Node(object):
             if len(next_boards) == 0:
                 print("Deadend")
                 break
-            next_move = max(next_boards, key=lambda b: b['rewards'])
-
+            if randomly is True:
+                index = math.trunc(random.uniform(0, len(next_boards) + 2)) % len(next_boards)
+                next_move = next_boards[index]
+            else:
+                next_move = max(next_boards, key=lambda b: b['rewards'])
             current_x = next_move['x']
             current_y = next_move['y']
             current_board[current_x][current_y] = s[0]
             rewards += next_move['rewards']
             s = s[1:]
-        if rewards >= self.best_final_reward and len(s) == 0: #and far == len(self.s):
+        if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
             self.best_final_node = Node(None, current_board, current_x, current_y, [])
             self.best_final_reward = rewards
@@ -100,8 +103,10 @@ class Node(object):
         return rewards * -1
 
     def confidence_interval(self):
-        ub = self.rewards + math.sqrt(2 * math.log10(self.plays) / 100)
-        return self.a
+        if self.plays == 0 and self.parent_node is not None:
+            return 0
+        ub = self.rewards + math.sqrt(2 * math.log10(self.plays) / self.parent_node.plays)
+        return ub
 
     def cloneGrid(self):
         return copy.deepcopy(self.a)
