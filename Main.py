@@ -7,7 +7,7 @@ TOTAL_TRIES = 1000
 
 
 def readData():
-    with open('data_submission/L64_s02.dat') as f:
+    with open('data_submission/L16_s01.dat') as f:
         lines = f.readlines()
         array = lines[0].strip().split(' ')
         str = list(int(ch) for ch in array)
@@ -26,7 +26,7 @@ def main():
     # s = [1, -1, 1, -1, 1, 1, -1, 1, 1, 1]
     print(len(s))
     init_board[1][1] = s[0]
-    init_node = Node(None, init_board, 1, 1, s[1:])
+    init_node = Node(0, None, init_board, 1, 1, s[1:])
     run(init_node)
     # print find_last_solution(init_node)
     init_node.best_final_node.print_out()
@@ -36,14 +36,17 @@ def main():
 def run(root):
     current_running_times = 0
     MAX_RUNNING_TIMES = 4000
-    # while (current_running_times < MAX_RUNNING_TIMES:
-    while root.best_final_node is None:
+    while (current_running_times < MAX_RUNNING_TIMES):
+    #while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))
         # Selection phase
         next = root.next_move()
+        tracing = [0]
         while next is not None and next.plays != 0:
+            tracing.append(next.id)
             next = next.next_move()
         # Expansion
+        print ("Tracing ids:" + str(tracing))
         if next is not None:
             current_node = next
             # SIMULATION

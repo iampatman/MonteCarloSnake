@@ -4,7 +4,8 @@ from numpy import random
 
 
 class Node(object):
-    def __init__(self, parent, grid, x, y, s, level=0):
+    def __init__(self, id, parent, grid, x, y, s, level=0):
+        self.id = id
         self.parent_node = parent
         self.next_steps = []
         self.rewards = 0
@@ -23,13 +24,13 @@ class Node(object):
             print ("%s" % self.s)
             for i in range(len(self.a)):
                 print self.a[i]
-        for move in moves:
+        for i, move in enumerate(moves):
             b = self.cloneGrid()
             x1 = move['x']
             y1 = move['y']
             if b[x1][y1] == 2:
                 b[x1][y1] = self.s[0]
-                next_node = Node(self, b, x1, y1, copy.deepcopy(self.s[1:]))
+                next_node = Node(self.id * 4 + i, self, b, x1, y1, copy.deepcopy(self.s[1:]))
                 self.next_steps.append(next_node)
 
     def next_move(self):
@@ -40,13 +41,13 @@ class Node(object):
         if len(self.next_steps) == 0:
             print "No next move"
             print "X=%d Y=%d" % (self.current_x, self.current_y)
-            self.print_out()
+            # self.print_out()
             return None
         discovered_steps = filter(lambda st: st.plays > 0, self.next_steps)
         not_discovered_steps = [step for step in self.next_steps if step not in discovered_steps]
         chance = random.uniform(low=0, high=100) if len(discovered_steps) > 0 else 0
         next_step = None
-        if (chance > 10 or len(not_discovered_steps) == 0) and len(discovered_steps) > 0:
+        if (chance > 80 or len(not_discovered_steps) == 0) and len(discovered_steps) > 0:
             next_step = max(discovered_steps, key=lambda node: node.confidence_interval())
         else:
             if len(not_discovered_steps) > 0:
@@ -67,7 +68,7 @@ class Node(object):
             rewards += sub_reward
         return rewards * -1
 
-    def simulate(self, depth, randomly = False):
+    def simulate(self, depth, randomly=False):
         # rewards = math.trunc(random.uniform(1, 10))
         count_steps = 2560 - len(self.s)
         depth = len(self.s) if depth == -1 else min([depth, len(self.s)])
@@ -106,16 +107,15 @@ class Node(object):
             s = s[1:]
         if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
-            self.best_final_node = Node(None, current_board, current_x, current_y, [])
+            self.best_final_node = Node(-1, None, current_board, current_x, current_y, [])
             self.best_final_reward = rewards
         print ("steps: %d" % count_steps)
         return rewards
 
-
     def confidence_interval(self):
-        if self.plays == 0 and self.parent_node is not None:
+        if self.plays == 0 or self.parent_node is None:
             return 0
-        ub = self.rewards + math.sqrt(2 * math.log10(self.plays) / self.parent_node.plays)
+        ub = self.rewards / self.plays + math.sqrt(2 * math.log10(self.plays) / self.parent_node.plays)
         return ub
 
     def cloneGrid(self):
