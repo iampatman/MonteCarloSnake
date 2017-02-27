@@ -37,6 +37,11 @@ class Node(object):
             return None
         if len(self.next_steps) == 0:
             self.init_next_moves()
+        if len(self.next_steps) == 0:
+            print "No next move"
+            print "X=%d Y=%d" % (self.current_x, self.current_y)
+            self.print_out()
+            return None
         discovered_steps = filter(lambda st: st.plays > 0, self.next_steps)
         not_discovered_steps = [step for step in self.next_steps if step not in discovered_steps]
         chance = random.uniform(low=0, high=100) if len(discovered_steps) > 0 else 0
@@ -50,9 +55,21 @@ class Node(object):
                 next_step = not_discovered_steps[index]
         return next_step
 
+    def calculate_additional_reward(self, grid, x, y):
+        moves = self.find_neighbors(grid, x, y)
+        rewards = 0
+        for move in moves:
+            x1 = move['x']
+            y1 = move['y']
+            sub_reward = 0
+            if grid[x1][y1] != 2:
+                sub_reward += grid[x][y] * grid[x1][y1]
+            rewards += sub_reward
+        return rewards * -1
+
     def simulate(self, depth, randomly = False):
         # rewards = math.trunc(random.uniform(1, 10))
-
+        count_steps = 2560 - len(self.s)
         depth = len(self.s) if depth == -1 else min([depth, len(self.s)])
         s = self.s[:depth]
         current_board = self.cloneGrid()
@@ -74,11 +91,14 @@ class Node(object):
             if len(next_boards) == 0:
                 print("Deadend")
                 break
+            else:
+                count_steps += 1
             if randomly is True:
                 index = math.trunc(random.uniform(0, len(next_boards) + 2)) % len(next_boards)
                 next_move = next_boards[index]
             else:
                 next_move = max(next_boards, key=lambda b: b['rewards'])
+
             current_x = next_move['x']
             current_y = next_move['y']
             current_board[current_x][current_y] = s[0]
@@ -88,19 +108,9 @@ class Node(object):
             print ("Found something")
             self.best_final_node = Node(None, current_board, current_x, current_y, [])
             self.best_final_reward = rewards
+        print ("steps: %d" % count_steps)
         return rewards
 
-    def calculate_additional_reward(self, grid, x, y):
-        moves = self.find_neighbors(grid, x, y)
-        rewards = 0
-        for move in moves:
-            x1 = move['x']
-            y1 = move['y']
-            sub_reward = 0
-            if grid[x1][y1] != 2:
-                sub_reward += grid[x][y] * grid[x1][y1]
-            rewards += sub_reward
-        return rewards * -1
 
     def confidence_interval(self):
         if self.plays == 0 and self.parent_node is not None:

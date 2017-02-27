@@ -7,7 +7,7 @@ TOTAL_TRIES = 1000
 
 
 def readData():
-    with open('test.dat') as f:
+    with open('data_submission/L64_s02.dat') as f:
         lines = f.readlines()
         array = lines[0].strip().split(' ')
         str = list(int(ch) for ch in array)
@@ -28,16 +28,17 @@ def main():
     init_board[1][1] = s[0]
     init_node = Node(None, init_board, 1, 1, s[1:])
     run(init_node)
-    #print find_last_solution(init_node)
+    # print find_last_solution(init_node)
     init_node.best_final_node.print_out()
     CheckResult.check_result(init_node.best_final_node.a)
 
 
 def run(root):
     current_running_times = 0
-    MAX_RUNNING_TIMES = 1000
-    while current_running_times < MAX_RUNNING_TIMES:
-        print (current_running_times)
+    MAX_RUNNING_TIMES = 4000
+    # while (current_running_times < MAX_RUNNING_TIMES:
+    while root.best_final_node is None:
+        print ("Time: %d" % (current_running_times + 1))
         # Selection phase
         next = root.next_move()
         while next is not None and next.plays != 0:
@@ -47,6 +48,7 @@ def run(root):
             current_node = next
             # SIMULATION
             reward = current_node.simulate(-1)
+            print ("Rewards: %d" % reward)
             current_node.rewards = reward
             current_node.plays = 1
         # BACK PROPAGATING
@@ -60,6 +62,7 @@ def run(root):
             current_node = parent
 
         current_running_times += 1
+        print ("==================")
 
 
 def find_last_solution(root):
@@ -70,7 +73,7 @@ def find_last_solution(root):
 
     print ("Len of s: %d" % (len(current_node.s)))
     current_running_times = 1
-    MAX_RUNNING_TIMES = 1000
+    MAX_RUNNING_TIMES = 3000
     reward = 0
     while current_running_times <= MAX_RUNNING_TIMES:
         print(current_running_times)
