@@ -30,7 +30,7 @@ class Node(object):
             y1 = move['y']
             if b[x1][y1] == 2:
                 b[x1][y1] = self.s[0]
-                next_node = Node(self.id * 4 + i, self, b, x1, y1, copy.deepcopy(self.s[1:]))
+                next_node = Node(self.id * 4 + i + 1, self, b, x1, y1, copy.deepcopy(self.s[1:]))
                 self.next_steps.append(next_node)
 
     def next_move(self):

@@ -7,7 +7,7 @@ TOTAL_TRIES = 1000
 
 
 def readData():
-    with open('data_submission/L16_s01.dat') as f:
+    with open('data_submission/L64_s02.dat') as f:
         lines = f.readlines()
         array = lines[0].strip().split(' ')
         str = list(int(ch) for ch in array)
@@ -37,14 +37,14 @@ def run(root):
     current_running_times = 0
     MAX_RUNNING_TIMES = 4000
     while (current_running_times < MAX_RUNNING_TIMES):
-    #while root.best_final_node is None:
+    # while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))
         # Selection phase
         next = root.next_move()
-        tracing = [0]
+        tracing = [0, next.id]
         while next is not None and next.plays != 0:
-            tracing.append(next.id)
             next = next.next_move()
+            tracing.append(next.id)
         # Expansion
         print ("Tracing ids:" + str(tracing))
         if next is not None:
