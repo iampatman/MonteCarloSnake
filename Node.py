@@ -1,6 +1,8 @@
 import copy
 import math
+import sys
 from numpy import random
+import CheckResult
 
 
 class Node(object):
@@ -15,7 +17,7 @@ class Node(object):
         self.current_y = y
         self.a = grid
         self.best_final_node = None
-        self.best_final_reward = int(0)
+        self.best_final_reward = sys.maxint * -1
         self.level = level
 
     def init_next_moves(self):
@@ -30,7 +32,7 @@ class Node(object):
             y1 = move['y']
             if b[x1][y1] == 2:
                 b[x1][y1] = self.s[0]
-                next_node = Node(self.id * 4 + i + 1, self, b, x1, y1, copy.deepcopy(self.s[1:]))
+                next_node = Node(self.id * 3 + i + 1, self, b, x1, y1, copy.deepcopy(self.s[1:]))
                 self.next_steps.append(next_node)
 
     def next_move(self):
@@ -70,7 +72,7 @@ class Node(object):
 
     def simulate(self, depth, randomly=False):
         # rewards = math.trunc(random.uniform(1, 10))
-        count_steps = 2560 - len(self.s)
+        count_steps = 15 - len(self.s)
         depth = len(self.s) if depth == -1 else min([depth, len(self.s)])
         s = self.s[:depth]
         current_board = self.cloneGrid()
@@ -113,9 +115,10 @@ class Node(object):
         return rewards
 
     def confidence_interval(self):
-        if self.plays == 0 or self.parent_node is None:
-            return 0
-        ub = self.rewards / self.plays + math.sqrt(2 * math.log10(self.plays) / self.parent_node.plays)
+        parent_plays = 0 if self.parent_node is None else self.parent_node.plays
+        if self.plays == 0:
+            return 10000000
+        ub = self.rewards / self.plays + math.sqrt(2 * math.log10(parent_plays) / self.plays)
         return ub
 
     def cloneGrid(self):
@@ -138,6 +141,30 @@ class Node(object):
         for i in range(len(self.a)):
             print(self.a[i])
         print self.best_final_reward
+
+    def look_ahead(self, grid, r, x, y, s):
+        # return reward when do a look ahead
+        moves = self.find_neighbors(grid, x, y);
+        max_rewards = sys.maxint * -1;
+        max_move = None
+        # Reach the target
+        for move in moves:
+            x1 = move['x']
+            y1 = move['y']
+            if grid[x1][y1] == 2:
+                grid[x1][y1] = s[0]
+                add_reward = self.calculate_additional_reward(grid, x1, y1)
+                if len(s) > 1:
+                    result = self.look_ahead(grid, r + add_reward, x1, y1, s[1:])
+                    if result['rewards'] > max_rewards:
+                        max_rewards = result['rewards']
+                        max_move = move
+                else:
+                    if r + add_reward > max_rewards:
+                        max_rewards = r + add_reward
+                        max_move = move;
+                grid[x1][y1] = 2
+        return {'rewards': max_rewards, 'move': max_move}
 
 
 def hash(self):
