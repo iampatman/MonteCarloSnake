@@ -72,7 +72,7 @@ class Node(object):
 
     def simulate(self, depth, randomly=False):
         # rewards = math.trunc(random.uniform(1, 10))
-        count_steps = 15 - len(self.s)
+        count_steps = 2560 - len(self.s)
         depth = len(self.s) if depth == -1 else min([depth, len(self.s)])
         s = self.s[:depth]
         current_board = self.cloneGrid()
@@ -80,33 +80,18 @@ class Node(object):
         current_x = self.current_x
         current_y = self.current_y
         while len(s) > 0:
-            moves = self.find_neighbors(grid=current_board, x=current_x, y=current_y)
-            next_boards = list()
-            for move in moves:
-                b = copy.deepcopy(current_board)
-                x1 = move['x']
-                y1 = move['y']
-                if b[x1][y1] == 2:
-                    b[x1][y1] = s[0]
-                    sub_reward = self.calculate_additional_reward(b, x1, y1)
-                    next_boards.append({'x': x1, 'y': y1, 'rewards': sub_reward})
-
-            if len(next_boards) == 0:
+            lookahead_result = self.look_ahead(grid=current_board, r=0, s=s[:min(5, len(s))], x=current_x, y=current_y)
+            if lookahead_result["move"] is None:
                 print("Deadend")
                 break
-            else:
-                count_steps += 1
-            if randomly is True:
-                index = math.trunc(random.uniform(0, len(next_boards) + 2)) % len(next_boards)
-                next_move = next_boards[index]
-            else:
-                next_move = max(next_boards, key=lambda b: b['rewards'])
-
+            count_steps += 1;
+            next_move = lookahead_result["move"]
             current_x = next_move['x']
             current_y = next_move['y']
             current_board[current_x][current_y] = s[0]
-            rewards += next_move['rewards']
+            rewards += self.calculate_additional_reward(current_board, current_x, current_y)
             s = s[1:]
+
         if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
             self.best_final_node = Node(-1, None, current_board, current_x, current_y, [])
@@ -166,13 +151,11 @@ class Node(object):
                 grid[x1][y1] = 2
         return {'rewards': max_rewards, 'move': max_move}
 
+    def hash(self):
+        return ""
 
-def hash(self):
-    return ""
-
-
-def print_out(self):
-    print(self.a)
+    def print_out(self):
+        print(self.a)
 
 
 def main():

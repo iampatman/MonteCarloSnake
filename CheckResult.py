@@ -3,7 +3,7 @@ VALID_DATA = True
 
 
 def readData():
-    with open('test.dat') as f:
+    with open('data_submission/L64_s02.dat') as f:
         steps = list()
         lines = f.readline()
         n = int(lines)

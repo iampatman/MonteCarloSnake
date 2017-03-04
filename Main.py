@@ -1,14 +1,14 @@
 from Node import Node
 import CheckResult
 
-INPUT_FILE_NAMES = ["test.dat"]
+INPUT_FILE_NAMES = ["data_submission/L64_s02.dat"]
 n = 0
 TOTAL_TRIES = 1000
 
 
 # data_submission/L08_s01.dat
 def readData():
-    with open('test.dat') as f:
+    with open('data_submission/L64_s02.dat') as f:
         lines = f.readlines()
         array = lines[0].strip().split(' ')
         str = list(int(ch) for ch in array)
@@ -39,8 +39,8 @@ def main():
 def run(root):
     current_running_times = 0
     MAX_RUNNING_TIMES = 1000
-    while (current_running_times < MAX_RUNNING_TIMES):
-        # while root.best_final_node is None:
+    #while (current_running_times < MAX_RUNNING_TIMES):
+    while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))
         # Selection phase
         next = root.next_move()
