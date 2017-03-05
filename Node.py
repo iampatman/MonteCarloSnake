@@ -2,11 +2,10 @@ import copy
 import math
 import sys
 from numpy import random
-import CheckResult
 
 
 class Node(object):
-    def __init__(self, id, parent, grid, x, y, s, level=0):
+    def __init__(self, id, parent, grid, x, y, s):
         self.id = id
         self.parent_node = parent
         self.next_steps = []
@@ -18,7 +17,8 @@ class Node(object):
         self.a = grid
         self.best_final_node = None
         self.best_final_reward = sys.maxint * -1
-        self.level = level
+        self.moves_to_result = list()
+        self.best_next_node_to_result = None
 
     def init_next_moves(self):
         moves = self.find_neighbors(grid=self.a, x=self.current_x, y=self.current_y)
@@ -79,13 +79,15 @@ class Node(object):
         rewards = 0
         current_x = self.current_x
         current_y = self.current_y
+        moves = list()
         while len(s) > 0:
-            lookahead_result = self.look_ahead(grid=current_board, r=0, s=s[:min(5, len(s))], x=current_x, y=current_y)
+            lookahead_result = self.look_ahead(grid=current_board, r=0, s=s[:min(7, len(s))], x=current_x, y=current_y)
             if lookahead_result["move"] is None:
-                print("Deadend")
+                print("Dead end")
                 break
-            count_steps += 1;
+            count_steps += 1
             next_move = lookahead_result["move"]
+            moves.append(next_move)
             current_x = next_move['x']
             current_y = next_move['y']
             current_board[current_x][current_y] = s[0]
@@ -94,6 +96,7 @@ class Node(object):
 
         if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
+            self.moves_to_result = moves;
             self.best_final_node = Node(-1, None, current_board, current_x, current_y, [])
             self.best_final_reward = rewards
         print ("steps: %d" % count_steps)
@@ -147,15 +150,13 @@ class Node(object):
                 else:
                     if r + add_reward > max_rewards:
                         max_rewards = r + add_reward
-                        max_move = move;
+                        max_move = move
                 grid[x1][y1] = 2
         return {'rewards': max_rewards, 'move': max_move}
 
     def hash(self):
         return ""
 
-    def print_out(self):
-        print(self.a)
 
 
 def main():

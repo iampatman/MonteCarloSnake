@@ -1,5 +1,6 @@
 from Node import Node
 import CheckResult
+import sys
 
 INPUT_FILE_NAMES = ["data_submission/L64_s02.dat"]
 n = 0
@@ -7,40 +8,50 @@ TOTAL_TRIES = 1000
 
 
 # data_submission/L08_s01.dat
-def readData():
-    with open('data_submission/L64_s02.dat') as f:
+def readData(filename):
+    with open(filename) as f:
         lines = f.readlines()
         array = lines[0].strip().split(' ')
         str = list(int(ch) for ch in array)
         print str
         n = str[0]
         a = str[2:]
+        f.close()
         return {'size': n, 'data': a}
 
 
 def main():
-    result = readData()
+    filename = sys.argv[1] if len(sys.argv) > 1 else 'data_submission/L08_s01.dat'
+    result = readData(filename)
     s = result['data']
     size = result['size']
-    # size = 5
     init_board = [[2 for x in range(size)] for y in range(size)]
-    # s = [1, -1, 1, -1, 1, 1, -1, 1, 1, 1]
     print(len(s))
     init_board[1][1] = s[0]
     init_board[1][2] = s[1]
-    init_node = Node(0, None, init_board, 1, 2, s[2:])
+    root = Node(0, None, init_board, 1, 2, s[2:])
     # print init_node.look_ahead(init_board, s[0] * s[1] * -1, 1, 2, s[2:])
-    run(init_node)
-    # print find_last_solution(init_node)
-    init_node.best_final_node.print_out()
-    CheckResult.check_result(init_node.best_final_node.a)
+    run(root)
+    for move in print_solution(root, s):
+        print "%d %d %d" % (move['x'], move['y'], move['k'])
+    write_to_file("output_node_config.dat", print_solution(root, s), size)
+    root.best_final_node.print_out()
+    CheckResult.check_result(root.best_final_node.a)
+
+
+def write_to_file(filename, moves,size):
+    with open(filename, 'w') as f:
+        f.write('%d\n' % size)
+        for move in moves:
+            f.write("%d %d %d\n" % (move['x'], move['y'], move['k']))
+        f.close()
 
 
 def run(root):
     current_running_times = 0
-    MAX_RUNNING_TIMES = 1000
-    #while (current_running_times < MAX_RUNNING_TIMES):
-    while root.best_final_node is None:
+    MAX_RUNNING_TIMES = 10
+    while (current_running_times < MAX_RUNNING_TIMES):
+        # while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))
         # Selection phase
         next = root.next_move()
@@ -64,11 +75,26 @@ def run(root):
                 parent.plays += 1
                 if current_node.best_final_node is not None and current_node.best_final_reward >= parent.best_final_reward:
                     parent.best_final_node = current_node.best_final_node
+                    parent.best_next_node_to_result = current_node
                     parent.best_final_reward = current_node.best_final_reward
                 current_node = parent
-
         current_running_times += 1
         print ("==================")
+
+
+def print_solution(root, s):
+    moves = [{'x': 1, 'y': 1, 'k': s[0]}, {'x': 1, 'y': 2, 'k': s[1]}]
+    current_node = root
+    index = 1
+    while current_node.best_next_node_to_result is not None:
+        current_node = current_node.best_next_node_to_result
+        index += 1
+        moves.append({'x': current_node.current_x, 'y': current_node.current_y, 'k': s[index]})
+    moves_to_result = current_node.moves_to_result
+    for move in moves_to_result:
+        index += 1
+        moves.append({'x': move['x'], 'y': move['y'], 'k': s[index]})
+    return moves
 
 
 def find_last_solution(root):
