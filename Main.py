@@ -1,12 +1,10 @@
 from Node import Node
 import CheckResult
 import sys
-
+import datetime
 INPUT_FILE_NAMES = ["data_submission/L64_s02.dat"]
 n = 0
 TOTAL_TRIES = 1000
-
-
 # data_submission/L08_s01.dat
 def readData(filename):
     with open(filename) as f:
@@ -21,7 +19,9 @@ def readData(filename):
 
 
 def main():
-    filename = sys.argv[1] if len(sys.argv) > 1 else 'data_submission/L08_s01.dat'
+    starttime =datetime.datetime.now()
+
+    filename = "data_submission/" + sys.argv[1] if len(sys.argv) > 1 else 'data_submission/L64_s01.dat'
     result = readData(filename)
     s = result['data']
     size = result['size']
@@ -34,12 +34,15 @@ def main():
     run(root)
     for move in print_solution(root, s):
         print "%d %d %d" % (move['x'], move['y'], move['k'])
-    write_to_file("output_node_config.dat", print_solution(root, s), size)
+    write_to_file("output_node_config_L64_s01.dat", print_solution(root, s), size)
+    endtime = datetime.datetime.now()
+    print endtime-starttime
     root.best_final_node.print_out()
     CheckResult.check_result(root.best_final_node.a)
 
 
-def write_to_file(filename, moves,size):
+
+def write_to_file(filename, moves, size):
     with open(filename, 'w') as f:
         f.write('%d\n' % size)
         for move in moves:
@@ -49,7 +52,7 @@ def write_to_file(filename, moves,size):
 
 def run(root):
     current_running_times = 0
-    MAX_RUNNING_TIMES = 10
+    MAX_RUNNING_TIMES = 100
     while (current_running_times < MAX_RUNNING_TIMES):
         # while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))

@@ -1,6 +1,9 @@
+import sys
+
+
+
 INPUT_FILE_NAMES = ["test.dat"]
 VALID_DATA = True
-import sys
 
 
 def readData(filename):
@@ -30,11 +33,11 @@ def readGrid():
 
 
 def main():
-    filename = sys.argv[1] if len(sys.argv) > 1 else 'result.dat'
+    filename = sys.argv[1] if len(sys.argv) > 1 else 'output_node_config_L16_s02.dat'
     result = readData(filename)
     a = result['data']
     size = result['size']
-
+    VALID_DATA = True
     a = [[2 for x in range(size)] for y in range(size)]
     reward = 0
     for index, step in enumerate(result['data']):
@@ -49,7 +52,10 @@ def main():
         a[x][y] = q
     # for row in (a[i] for i in range(size)):
     #     print row
-    print "Reward is %d" % check_result(a)
+    if VALID_DATA is False:
+        print "Data invalid"
+    else:
+        print "Reward is %d" % check_result(a)
 
 
 def check_result(a):
@@ -66,6 +72,7 @@ def check_result(a):
                 sub_total = sum([a[k['x']][k['y']] * value for k in neighbors]) * -1
                 reward += sub_total
     print "Count %d" % count
+    print "Rewards %d" % (reward/2)
     return reward / 2
 
 

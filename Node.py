@@ -93,10 +93,10 @@ class Node(object):
             current_board[current_x][current_y] = s[0]
             rewards += self.calculate_additional_reward(current_board, current_x, current_y)
             s = s[1:]
-
+        # neighbors_last_move = self.find_neighbors(current_board, current_x, current_y)
         if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
-            self.moves_to_result = moves;
+            self.moves_to_result = moves
             self.best_final_node = Node(-1, None, current_board, current_x, current_y, [])
             self.best_final_reward = rewards
         print ("steps: %d" % count_steps)
@@ -112,7 +112,7 @@ class Node(object):
     def cloneGrid(self):
         return copy.deepcopy(self.a)
 
-    def find_neighbors(self, grid, x, y):
+    def find_neighbors(self, grid, x, y, is_empty=True):
         dx = [1, -1, 0, 0]
         dy = [0, 0, -1, 1]
         moves = list()
@@ -122,7 +122,10 @@ class Node(object):
             x1 = x1 % size if x1 >= 0 else x1 + size
             y1 = y + dy[i]
             y1 = y1 % size if y1 >= 0 else y1 + size
-            moves.append({'x': x1, 'y': y1})
+
+            if grid[x1][y1] == 2:
+                moves.append({'x': x1, 'y': y1})
+
         return moves
 
     def print_out(self):
@@ -132,13 +135,17 @@ class Node(object):
 
     def look_ahead(self, grid, r, x, y, s):
         # return reward when do a look ahead
-        moves = self.find_neighbors(grid, x, y);
-        max_rewards = sys.maxint * -1;
+        moves = self.find_neighbors(grid, x, y)
+        max_rewards = sys.maxint * -1
         max_move = None
         # Reach the target
+        # if len(moves) == 1:
+        #     return
         for move in moves:
             x1 = move['x']
             y1 = move['y']
+            moves1 = self.find_neighbors(grid, x1, y1)
+            count = 0
             if grid[x1][y1] == 2:
                 grid[x1][y1] = s[0]
                 add_reward = self.calculate_additional_reward(grid, x1, y1)
@@ -156,7 +163,6 @@ class Node(object):
 
     def hash(self):
         return ""
-
 
 
 def main():
