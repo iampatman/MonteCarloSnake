@@ -93,7 +93,6 @@ class Node(object):
             current_board[current_x][current_y] = s[0]
             rewards += self.calculate_additional_reward(current_board, current_x, current_y)
             s = s[1:]
-        # neighbors_last_move = self.find_neighbors(current_board, current_x, current_y)
         if rewards >= self.best_final_reward and len(s) == 0 and depth == len(self.s):
             print ("Found something")
             self.moves_to_result = moves
@@ -112,7 +111,7 @@ class Node(object):
     def cloneGrid(self):
         return copy.deepcopy(self.a)
 
-    def find_neighbors(self, grid, x, y, is_empty=True):
+    def find_neighbors(self, grid, x, y, for_last_set=False):
         dx = [1, -1, 0, 0]
         dy = [0, 0, -1, 1]
         moves = list()
@@ -122,10 +121,8 @@ class Node(object):
             x1 = x1 % size if x1 >= 0 else x1 + size
             y1 = y + dy[i]
             y1 = y1 % size if y1 >= 0 else y1 + size
-
-            if grid[x1][y1] == 2:
+            if for_last_set is False or (for_last_set is True and grid[x1][y1] == 2):
                 moves.append({'x': x1, 'y': y1})
-
         return moves
 
     def print_out(self):
@@ -161,8 +158,42 @@ class Node(object):
                 grid[x1][y1] = 2
         return {'rewards': max_rewards, 'move': max_move}
 
-    def hash(self):
-        return ""
+    def simulateForLastSet(self):
+        count_steps = 2560 - len(self.s)
+        s = self.s
+        current_board = self.cloneGrid()
+        rewards = 0
+        current_x = self.current_x
+        current_y = self.current_y
+        moves = list()
+        while len(s) > 0:
+            next_moves = self.find_neighbors(current_board, current_x, current_y, for_last_set=True)
+            if len(next_moves) == 0:
+                print ("deadend")
+                break
+            next_move = next_moves[0]
+            next_min = 10
+
+            for move in next_moves:
+                k = len(self.find_neighbors(current_board, next_move['x'], next_move['y']),)
+                if k < next_min:
+                    next_min = k
+                    next_move = move
+            count_steps += 1
+            moves.append(next_move)
+            current_x = next_move['x']
+            current_y = next_move['y']
+            current_board[current_x][current_y] = s[0]
+            rewards += self.calculate_additional_reward(current_board, current_x, current_y)
+            s = s[1:]
+        #neighbors_last_move = self.find_neighbors(current_board, current_x, current_y)
+        if rewards >= self.best_final_reward and len(s) == 0:
+            print ("Found something")
+            self.moves_to_result = moves
+            self.best_final_node = Node(-1, None, current_board, current_x, current_y, [])
+            self.best_final_reward = rewards
+        print ("steps: %d" % count_steps)
+        return rewards
 
 
 def main():

@@ -17,11 +17,10 @@ def readData(filename):
         f.close()
         return {'size': n, 'data': a}
 
-
 def main():
     starttime =datetime.datetime.now()
 
-    filename = "data_submission/" + sys.argv[1] if len(sys.argv) > 1 else 'data_submission/L64_s01.dat'
+    filename = "data_submission/" + sys.argv[1] if len(sys.argv) > 1 else 'data_submission/L64_s02.dat'
     result = readData(filename)
     s = result['data']
     size = result['size']
@@ -30,30 +29,37 @@ def main():
     init_board[1][1] = s[0]
     init_board[1][2] = s[1]
     root = Node(0, None, init_board, 1, 2, s[2:])
-    # print init_node.look_ahead(init_board, s[0] * s[1] * -1, 1, 2, s[2:])
-    run(root)
+    if filename.__contains__("L64_s02"):
+        root.simulateForLastSet()
+    else:
+        run(root)
     for move in print_solution(root, s):
         print "%d %d %d" % (move['x'], move['y'], move['k'])
-    write_to_file("output_node_config_L64_s01.dat", print_solution(root, s), size)
+    rewards = CheckResult.check_result(root.best_final_node.a)
+    write_to_file("output_node_config.dat", print_solution(root, s), size, s, rewards)
     endtime = datetime.datetime.now()
     print endtime-starttime
     root.best_final_node.print_out()
-    CheckResult.check_result(root.best_final_node.a)
 
 
 
-def write_to_file(filename, moves, size):
+
+def write_to_file(filename, moves, size, s, rewards):
     with open(filename, 'w') as f:
-        f.write('%d\n' % size)
+        f.write('%d %d ' % (size, size))
+        for ch in s:
+            f.write("%d " % ch)
+        f.write("\n")
         for move in moves:
             f.write("%d %d %d\n" % (move['x'], move['y'], move['k']))
+        f.write("%d" % rewards)
         f.close()
 
 
 def run(root):
     current_running_times = 0
     MAX_RUNNING_TIMES = 100
-    while (current_running_times < MAX_RUNNING_TIMES):
+    while current_running_times < MAX_RUNNING_TIMES:
         # while root.best_final_node is None:
         print ("Time: %d" % (current_running_times + 1))
         # Selection phase
